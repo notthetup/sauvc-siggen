@@ -53,20 +53,66 @@
         for (var index =0; index < allButtons.length; index++){
           allButtons[index].addEventListener('click', function(){
             mode = this.id;
-            console.log(mode);
+            for (var index =0; index < allButtons.length; index++){
+              allButtons[index].classList.remove('playing');
+            }
+            if (this.id){
+              this.classList.add('playing');
+            }
           })
         }
       });
     </script>
+    <style>
+    h1{
+      font-size: 2.7em;
+      padding: .5em 2em;
+      font-family: Georgia;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    button {
+      font-size: 2em;
+      margin: 1em;
+      background: #48aab6;
+      border: 3px solid #313338;
+      padding: .5em 2em;
+      font-family: Georgia;
+      color: white;
+    }
+
+    button.playing{
+      background: #FE9C42;
+    }
+
+    .mode2{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #FE5042;
+      margin-bottom: 20px;
+      border-radius: 5px;
+    }
+
+    .mode3{
+      background: #FEC342;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    </style>
   </head>
   <body>
+    <h1> SAUVC Signal Generator </h1>
     <button disabled>Stop</button>
-    <div>
+    <hr />
+    <div class="mode2">
       <button id=20 class="freq" disabled>20kHz</button>
       <button id=30 class="freq" disabled>30kHz</button>
       <button id=40 class="freq" disabled>40kHz</button>
     </div>
-    <div>
+    <div class="mode3">
       <button id=lfm class="freq" disabled>LFM</button>
     </div>
   </body>
