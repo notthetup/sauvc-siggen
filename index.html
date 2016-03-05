@@ -1,0 +1,73 @@
+<html>
+  <head>
+    <title>SAUVC Signal Generator</title>
+    <script>
+      window.addEventListener('load', function(){
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        var ac = new AudioContext();
+        var allButtons = document.querySelectorAll('button');
+        var mode;
+        var multiplier = window.location.hash === "#debug" ? 1/100 : 1;
+        var dutyCycle = 0.7;
+        var osc;
+
+        if (ac.sampleRate < 96000){
+          alert("Sample Rate " + ac.sampleRate + " is too low.");
+          return;
+        }
+
+        for (var index =0; index < allButtons.length; index++){
+          allButtons[index].disabled = false;
+        }
+
+
+        window.requestAnimationFrame = window.requestAnimationFrame ||
+                                       window.webkitRequestAnimationFrame ||
+                                       window.mozRequestAnimationFrame;
+
+        var lastProcessTime = 0;
+
+        function audioProcess(){
+          if (Math.floor(lastProcessTime) < Math.floor(ac.currentTime)){
+            ct = ac.currentTime;
+
+            osc = ac.createOscillator();
+            osc.connect(ac.destination);
+
+            if (mode === '20' || mode === '30' || mode === '40'){
+              osc.frequency.value = mode*1000*multiplier;
+              osc.start(ct);
+              osc.stop(ct + dutyCycle);
+            }else if (mode === 'lfm'){
+              osc.frequency.setValueAtTime(20000*multiplier, ct);
+              osc.start(ct);
+              osc.stop(ct + dutyCycle);
+              osc.frequency.linearRampToValueAtTime(30000*multiplier, ct + 0.10);
+            }
+          }
+          lastProcessTime = ac.currentTime;
+          requestAnimationFrame(audioProcess);
+        }
+        audioProcess();
+
+        for (var index =0; index < allButtons.length; index++){
+          allButtons[index].addEventListener('click', function(){
+            mode = this.id;
+            console.log(mode);
+          })
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <button disabled>Stop</button>
+    <div>
+      <button id=20 class="freq" disabled>20kHz</button>
+      <button id=30 class="freq" disabled>30kHz</button>
+      <button id=40 class="freq" disabled>40kHz</button>
+    </div>
+    <div>
+      <button id=lfm class="freq" disabled>LFM</button>
+    </div>
+  </body>
+</html>
