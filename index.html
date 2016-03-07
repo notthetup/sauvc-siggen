@@ -8,7 +8,7 @@
         var allButtons = document.querySelectorAll('button');
         var mode;
         var multiplier = window.location.hash === "#debug" ? 1/100 : 1;
-        var dutyCycle = 0.7;
+        var dutyCycle = 0.1;
         var osc;
 
         if (ac.sampleRate < 96000){
@@ -42,7 +42,7 @@
               osc.frequency.setValueAtTime(20000*multiplier, ct);
               osc.start(ct);
               osc.stop(ct + dutyCycle);
-              osc.frequency.linearRampToValueAtTime(30000*multiplier, ct + 0.10);
+              osc.frequency.linearRampToValueAtTime(30000*multiplier, ct + dutyCycle);
             }
           }
           lastProcessTime = ac.currentTime;
