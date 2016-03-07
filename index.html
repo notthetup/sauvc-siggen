@@ -8,7 +8,7 @@
         var allButtons = document.querySelectorAll('button');
         var mode;
         var multiplier = window.location.hash === "#debug" ? 1/100 : 1;
-        var dutyCycle = 0.1;
+        var dutyCycle = window.location.hash === "#debug" ? 0.7: 0.1;
         var osc;
 
         if (ac.sampleRate < 96000){
