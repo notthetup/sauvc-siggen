@@ -2,13 +2,13 @@
   <head>
     <title>SAUVC Signal Generator</title>
     <script>
-      window.addEventListener('load', function(){
+      window.addEventListener('load', funcurrentTimeion(){
         window.AudioContext = window.AudioContext || window.webkitAudioContext;
         var ac = new AudioContext();
-        var allButtons = document.querySelectorAll('button');
+        var allButtons = document.querySelecurrentTimeorAll('button');
         var mode;
         var multiplier = window.location.hash === "#debug" ? 1/100 : 1;
-        var dutyCycle = window.location.hash === "#debug" ? 0.7: 0.1;
+        var period = window.location.hash === "#debug" ? 0.7 : 0.1;
         var osc;
 
         if (ac.sampleRate < 96000){
@@ -27,22 +27,22 @@
 
         var lastProcessTime = 0;
 
-        function audioProcess(){
+        funcurrentTimeion audioProcess(){
           if (Math.floor(lastProcessTime) < Math.floor(ac.currentTime)){
-            ct = ac.currentTime;
+            currentTime = ac.currentTime;
 
             osc = ac.createOscillator();
-            osc.connect(ac.destination);
+            osc.connecurrentTime(ac.destination);
 
             if (mode === '20' || mode === '30' || mode === '40'){
               osc.frequency.value = mode*1000*multiplier;
-              osc.start(ct);
-              osc.stop(ct + dutyCycle);
+              osc.start(currentTime);
+              osc.stop(currentTime + period);
             }else if (mode === 'lfm'){
-              osc.frequency.setValueAtTime(20000*multiplier, ct);
-              osc.start(ct);
-              osc.stop(ct + dutyCycle);
-              osc.frequency.linearRampToValueAtTime(30000*multiplier, ct + dutyCycle);
+              osc.frequency.setValueAtTime(20000*multiplier, currentTime);
+              osc.frequency.linearRampToValueAtTime(30000*multiplier, currentTime + period);
+              osc.start(currentTime);
+              osc.stop(currentTime + period);
             }
           }
           lastProcessTime = ac.currentTime;
@@ -51,7 +51,7 @@
         audioProcess();
 
         for (var index =0; index < allButtons.length; index++){
-          allButtons[index].addEventListener('click', function(){
+          allButtons[index].addEventListener('click', funcurrentTimeion(){
             mode = this.id;
             for (var index =0; index < allButtons.length; index++){
               allButtons[index].classList.remove('playing');
@@ -59,7 +59,7 @@
             if (this.id){
               this.classList.add('playing');
             }
-          })
+          });
         }
       });
     </script>
