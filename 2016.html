@@ -1,0 +1,119 @@
+<html>
+  <head>
+    <title>SAUVC Signal Generator</title>
+    <script>
+      window.addEventListener('load', function(){
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        var ac = new AudioContext();
+        var allButtons = document.querySelectorAll('button');
+        var mode;
+        var multiplier = window.location.hash === "#debug" ? 1/100 : 1;
+        var period = window.location.hash === "#debug" ? 0.7 : 0.1;
+        var osc;
+
+        if (ac.sampleRate < 96000){
+          alert("Your System Audio Sample Rate " + ac.sampleRate + " is too low. \n Please change it to something higher and refresh this page");
+          return;
+        }
+
+        for (var index =0; index < allButtons.length; index++){
+          allButtons[index].disabled = false;
+        }
+
+
+        window.requestAnimationFrame = window.requestAnimationFrame ||
+                                       window.webkitRequestAnimationFrame ||
+                                       window.mozRequestAnimationFrame;
+
+        var lastProcessTime = 0;
+
+        function audioProcess(){
+          if (Math.floor(lastProcessTime) < Math.floor(ac.currentTime)){
+            currentTime = ac.currentTime;
+
+            osc = ac.createOscillator();
+            osc.connecurrentTime(ac.destination);
+
+            if (mode === '20' || mode === '30' || mode === '40'){
+              osc.frequency.value = mode*1000*multiplier;
+              osc.start(currentTime);
+              osc.stop(currentTime + period);
+            }else if (mode === 'lfm'){
+              osc.frequency.setValueAtTime(20000*multiplier, currentTime);
+              osc.frequency.linearRampToValueAtTime(30000*multiplier, currentTime + period);
+              osc.start(currentTime);
+              osc.stop(currentTime + period);
+            }
+          }
+          lastProcessTime = ac.currentTime;
+          requestAnimationFrame(audioProcess);
+        }
+        audioProcess();
+
+        for (var index =0; index < allButtons.length; index++){
+          allButtons[index].addEventListener('click', function(){
+            mode = this.id;
+            for (var index =0; index < allButtons.length; index++){
+              allButtons[index].classList.remove('playing');
+            }
+            if (this.id){
+              this.classList.add('playing');
+            }
+          });
+        }
+      });
+    </script>
+    <style>
+      h1{
+        font-size: 2.7em;
+        padding: .5em 2em;
+        font-family: Georgia;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      button {
+        font-size: 2em;
+        margin: 1em;
+        background: #48aab6;
+        border: 3px solid #313338;
+        padding: .5em 2em;
+        font-family: Georgia;
+        color: white;
+      }
+
+      button.playing{
+        background: #FE9C42;
+      }
+
+      div.mode2{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #FE5042;
+        margin-bottom: 20px;
+        border-radius: 5px;
+      }
+
+      div.mode3{
+        background: #FEC342;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <h1> SAUVC 2016 Signal Generator </h1>
+    <button disabled>Stop</button>
+    <hr />
+    <div class="mode2">
+      <button id=20 class="freq" disabled>20kHz</button>
+      <button id=30 class="freq" disabled>30kHz</button>
+      <button id=40 class="freq" disabled>40kHz</button>
+    </div>
+    <div class="mode3">
+      <button id=lfm class="freq" disabled>LFM</button>
+    </div>
+  </body>
+</html>

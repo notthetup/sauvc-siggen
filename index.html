@@ -2,88 +2,118 @@
   <head>
     <title>SAUVC Signal Generator</title>
     <script>
-      window.addEventListener('load', funcurrentTimeion(){
+      window.addEventListener('load', function(){
         window.AudioContext = window.AudioContext || window.webkitAudioContext;
         var ac = new AudioContext();
-        var allButtons = document.querySelecurrentTimeorAll('button');
-        var mode;
+        var startButton = document.querySelector('#start');
+        var selectButton = document.querySelector('select');
         var multiplier = window.location.hash === "#debug" ? 1/100 : 1;
         var period = window.location.hash === "#debug" ? 0.7 : 0.1;
         var osc;
+        var mute;
+        var lastScheduleTime = 0;
 
-        if (ac.sampleRate < 96000){
-          alert("Sample Rate " + ac.sampleRate + " is too low.");
+        if (ac.sampleRate < 96000 && window.location.hash !== "#debug"){
+          alert("Your System Audio Sample Rate " + ac.sampleRate + " is too low. \n Please change it to something higher and refresh this page");
           return;
         }
 
-        for (var index =0; index < allButtons.length; index++){
-          allButtons[index].disabled = false;
-        }
-
+        startButton.disabled = false;
+        selectButton.disabled = false;
 
         window.requestAnimationFrame = window.requestAnimationFrame ||
                                        window.webkitRequestAnimationFrame ||
                                        window.mozRequestAnimationFrame;
 
-        var lastProcessTime = 0;
+        osc = ac.createOscillator();
+        gain = ac.createGain();
+        mute = ac.createGain();
 
-        funcurrentTimeion audioProcess(){
-          if (Math.floor(lastProcessTime) < Math.floor(ac.currentTime)){
-            currentTime = ac.currentTime;
+        gain.gain.value = 0;
+        mute.gain.value = 0; // start muted
 
-            osc = ac.createOscillator();
-            osc.connecurrentTime(ac.destination);
+        osc.connect(gain);
+        gain.connect(mute);
+        mute.connect(ac.destination);
+        osc.frequency.value = 37500*multiplier;
+        osc.start();
 
-            if (mode === '20' || mode === '30' || mode === '40'){
-              osc.frequency.value = mode*1000*multiplier;
-              osc.start(currentTime);
-              osc.stop(currentTime + period);
-            }else if (mode === 'lfm'){
-              osc.frequency.setValueAtTime(20000*multiplier, currentTime);
-              osc.frequency.linearRampToValueAtTime(30000*multiplier, currentTime + period);
-              osc.start(currentTime);
-              osc.stop(currentTime + period);
-            }
+        function schedulePing(time){
+          console.log(time);
+          gain.gain.setValueAtTime(1,time);
+          gain.gain.setValueAtTime(0,time+period);
+        }
+
+        function audioProcess(){
+          var nextScheduleTime;
+          nextScheduleTime = ac.currentTime > lastScheduleTime + 1 ? Math.ceil(ac.currentTime) : lastScheduleTime + 1
+          schedulePing(nextScheduleTime);
+          lastScheduleTime = nextScheduleTime;
+        }
+
+        setInterval(audioProcess, 500);
+
+        startButton.addEventListener('click', function(){
+          if (this.innerHTML === "Start"){
+            this.innerHTML = "Stop";
+            this.classList.add('playing');
+            mute.gain.value = 1;
+          }else {
+            this.innerHTML = "Start";
+            this.classList.remove('playing');
+            mute.gain.value = 0;
           }
-          lastProcessTime = ac.currentTime;
-          requestAnimationFrame(audioProcess);
-        }
-        audioProcess();
+        });
 
-        for (var index =0; index < allButtons.length; index++){
-          allButtons[index].addEventListener('click', funcurrentTimeion(){
-            mode = this.id;
-            for (var index =0; index < allButtons.length; index++){
-              allButtons[index].classList.remove('playing');
-            }
-            if (this.id){
-              this.classList.add('playing');
-            }
-          });
-        }
+        selectButton.addEventListener('change', function(){
+          var freq = parseFloat(this.options[this.selectedIndex].value)*multiplier;
+          osc.frequency.value = freq;
+        });
+
       });
     </script>
     <style>
       h1{
-        font-size: 2.7em;
+
+        font-size: 3.1em;
         padding: .5em 2em;
-        font-family: Georgia;
+        font-family: arial,tahoma;
         display: flex;
         align-items: center;
         justify-content: center;
       }
+
+      h2{
+        font-size: 2.7em;
+        font-family: arial,tahoma;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
       button {
+        font-family:arial,tahoma;
         font-size: 2em;
         margin: 1em;
         background: #48aab6;
         border: 3px solid #313338;
         padding: .5em 2em;
-        font-family: Georgia;
+        font-family: arial,tahoma;
         color: white;
       }
 
       button.playing{
         background: #FE9C42;
+      }
+
+      div.mode1{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #FE5042;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        flex-direction: column;
       }
 
       div.mode2{
@@ -95,25 +125,43 @@
         border-radius: 5px;
       }
 
-      div.mode3{
-        background: #FEC342;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+      select{
+        margin-right: 1em;
+        background-color:#48aab6;
+        background-repeat:no-repeat;
+        background-position: right 10px top 15px;
+        background-size: 16px 16px;
+        padding:12px;
+        width:auto;
+        font-family:arial,tahoma;
+        font-size:2em;
+        font-weight:bold;
+        color:#fff;
+        text-align:center;
+        border-radius:3px;
+        -webkit-border-radius:3px;
+        border: 3px solid #313338;
+        outline:0;
+        transition:0.3s ease all;
+        width: 205px;
+        height: 75px;
       }
+
     </style>
   </head>
   <body>
-    <h1> SAUVC Signal Generator </h1>
-    <button disabled>Stop</button>
-    <hr />
-    <div class="mode2">
-      <button id=20 class="freq" disabled>20kHz</button>
-      <button id=30 class="freq" disabled>30kHz</button>
-      <button id=40 class="freq" disabled>40kHz</button>
-    </div>
-    <div class="mode3">
-      <button id=lfm class="freq" disabled>LFM</button>
+    <h1> SAUVC 2017 Signal Generator </h1>
+    <div class="mode1">
+      <div>
+        <h2> Ping </h2>
+      </div>
+      <div class="mode2">
+        <select name="select" disabled>
+          <option value="37500">37.5 kHz</option>
+          <option value="45000">45.0 kHz</option>
+        </select>
+        <button id="start" class="freq" disabled>Start</button>
+      </div>
     </div>
   </body>
 </html>
